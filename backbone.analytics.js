@@ -15,6 +15,25 @@
 
   var loadUrl = Backbone.History.prototype.loadUrl;
 
+  Backbone.Analytics = {
+	  getTracker: function() {
+		  // Universal Analytics
+		  var ga;
+		  if (window.GoogleAnalyticsObject && window.GoogleAnalyticsObject !== 'ga') {
+			  ga = window.GoogleAnalyticsObject;
+		  } else {
+			  ga = window.ga;
+		  }
+		  return ga || function(){};
+	  },
+
+	  setVar: function(dimension, value) {
+		var ga = this.getTracker();
+		if(ga)
+			ga('set', dimension, value);
+	  }
+  };
+
   Backbone.History.prototype.loadUrl = function(fragmentOverride) {
     var matched = loadUrl.apply(this, arguments),
         gaFragment = this.fragment;
@@ -41,9 +60,8 @@
       ga = window.ga;
     }
 
-    if (typeof ga !== 'undefined') {
-      ga('send', 'pageview', gaFragment);
-    }
+	Backbone.Analytics.getTracker()('send', 'pageview', gaFragment);
+
     return matched;
   };
 
